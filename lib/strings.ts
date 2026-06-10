@@ -86,6 +86,26 @@ export const strings = {
     cancel: "Cancel",
     close: "Close",
     registeredAt: "Registered",
+
+    // Bulk selection
+    selectAll: "Select all",
+    selectedCount: "{n} selected",
+    bulkCheckIn: "Check in",
+    bulkMarkNew: "Mark new",
+    bulkDelete: "Delete",
+    clearSelection: "Clear",
+    bulkDeleteConfirm: "Delete {n} guest(s)? This can't be undone.",
+
+    // Quick check-in mode
+    quickMode: "Check-in mode",
+    quickModeTitle: "Quick check-in",
+    quickExit: "Exit",
+    quickSearchPlaceholder: "Search guest name…",
+    quickHintPending: "Pending arrivals — tap a guest to check them in.",
+    quickNoPending: "Everyone has arrived.",
+    quickAlreadyIn: "Checked in",
+    quickTapToCheckIn: "Tap to check in",
+    quickUndo: "Undo",
   },
 
   login: {
