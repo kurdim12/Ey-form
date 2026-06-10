@@ -10,7 +10,7 @@ A production-ready guest registration system for a gala dinner in Amman.
 - Next.js 15 (App Router, TypeScript strict)
 - Tailwind CSS v4
 - `@supabase/supabase-js` v2 + `@supabase/ssr` for auth session handling
-- Deploy target: Vercel
+- Deploy target: Vercel **or** Cloudflare Workers (via the OpenNext adapter)
 
 No extra UI libraries, ORM or state library.
 
@@ -41,15 +41,25 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST "$URL/rest/v1/registrations" \
 
 ## Environment variables
 
-Copy `.env.example` to `.env.local` and fill in your project's values:
+**No setup required to run or deploy.** The project's Supabase URL and public
+anon key are committed as built-in defaults in
+[`lib/supabase/config.ts`](lib/supabase/config.ts), so the app builds and
+deploys with zero environment configuration. These are public, client-safe
+values (the anon key ships in the browser bundle either way; RLS is what
+protects the data).
+
+To point the app at a **different** Supabase project, set either env var — they
+always take precedence over the built-in defaults:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://<your-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
 ```
 
-Both are public, client-safe values. Find them in the Supabase dashboard under
-**Project Settings → API**.
+Locally, put them in `.env.local` (see `.env.example`). On Vercel / Cloudflare,
+add them as **build** variables. Find the values in the Supabase dashboard under
+**Project Settings → API**. The secret **service role** key is never used by
+the app and must never be added here.
 
 ## Database / migration
 
@@ -104,6 +114,46 @@ npm run build && npm start
    `NEXT_PUBLIC_SUPABASE_ANON_KEY`) under **Settings → Environment Variables**.
 4. Deploy. No extra build configuration is required.
 
+## Deploy to Cloudflare Workers
+
+This app runs full SSR + middleware, so it deploys to **Cloudflare Workers**
+(not static Pages) via the [OpenNext](https://opennext.js.org/cloudflare)
+adapter (`@opennextjs/cloudflare`). Config lives in `wrangler.jsonc` and
+`open-next.config.ts`; both are already wired up.
+
+**Option A — Connect the Git repo (recommended for continuous deploys)**
+
+1. Push this repo to GitHub.
+2. Cloudflare dashboard → **Workers & Pages → Create → Import a repository** →
+   select this repo. It detects Next.js and the OpenNext adapter.
+3. Confirm the build/deploy command is `npx opennextjs-cloudflare build` /
+   `npx wrangler deploy` (or `npm run deploy`).
+4. Deploy. No environment variables are required — the Supabase config is
+   committed as a built-in default. (Only set `NEXT_PUBLIC_*` **build**
+   variables here if you want to point at a *different* Supabase project;
+   `NEXT_PUBLIC_*` values are inlined at build time.)
+5. You get a `*.workers.dev` URL; add a custom domain if you like.
+
+**Option B — Deploy from your machine**
+
+```bash
+npm install
+npx wrangler login          # one-time auth
+npm run deploy              # builds with OpenNext and deploys
+```
+
+`npm run deploy` works as-is — the Supabase config has a committed default.
+(Set `NEXT_PUBLIC_*` in `.env.local` only to target a different project.)
+
+**Preview the Workers runtime locally**
+
+```bash
+npm run preview            # builds + runs in workerd via wrangler dev
+```
+
+> The compatibility date in `wrangler.jsonc` is set with the `nodejs_compat`
+> flag, which the Supabase client requires on Workers.
+
 ## How realtime stays authenticated
 
 With RLS enabled, an **unauthenticated** realtime socket silently receives no
@@ -142,4 +192,6 @@ lib/
     middleware.ts       Session refresh + /admin guard
 middleware.ts           Wires up the session/guard middleware
 supabase/migrations/    SQL schema
+wrangler.jsonc          Cloudflare Workers config (OpenNext)
+open-next.config.ts     OpenNext Cloudflare adapter config
 ```
