@@ -13,3 +13,8 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+// Enables the Cloudflare Workers runtime bindings during `next dev`.
+// No-op when not running under the OpenNext Cloudflare adapter.
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+initOpenNextCloudflareForDev();

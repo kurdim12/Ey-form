@@ -10,7 +10,7 @@ A production-ready guest registration system for a gala dinner in Amman.
 - Next.js 15 (App Router, TypeScript strict)
 - Tailwind CSS v4
 - `@supabase/supabase-js` v2 + `@supabase/ssr` for auth session handling
-- Deploy target: Vercel
+- Deploy target: Vercel **or** Cloudflare Workers (via the OpenNext adapter)
 
 No extra UI libraries, ORM or state library.
 
@@ -104,6 +104,48 @@ npm run build && npm start
    `NEXT_PUBLIC_SUPABASE_ANON_KEY`) under **Settings → Environment Variables**.
 4. Deploy. No extra build configuration is required.
 
+## Deploy to Cloudflare Workers
+
+This app runs full SSR + middleware, so it deploys to **Cloudflare Workers**
+(not static Pages) via the [OpenNext](https://opennext.js.org/cloudflare)
+adapter (`@opennextjs/cloudflare`). Config lives in `wrangler.jsonc` and
+`open-next.config.ts`; both are already wired up.
+
+**Option A — Connect the Git repo (recommended for continuous deploys)**
+
+1. Push this repo to GitHub.
+2. Cloudflare dashboard → **Workers & Pages → Create → Import a repository** →
+   select this repo. It detects Next.js and the OpenNext adapter.
+3. Confirm the build/deploy command is `npx opennextjs-cloudflare build` /
+   `npx wrangler deploy` (or `npm run deploy`).
+4. Under **Settings → Variables and Secrets → Build variables**, add:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+   These must be set as **build** variables (not just runtime) because
+   `NEXT_PUBLIC_*` values are inlined into the client bundle at build time.
+5. Deploy. You get a `*.workers.dev` URL; add a custom domain if you like.
+
+**Option B — Deploy from your machine**
+
+```bash
+npm install
+npx wrangler login          # one-time auth
+npm run deploy              # builds with OpenNext and deploys
+```
+
+`npm run deploy` reads `.env.local` for the `NEXT_PUBLIC_*` values during the
+build, so make sure that file is filled in locally.
+
+**Preview the Workers runtime locally**
+
+```bash
+npm run preview            # builds + runs in workerd via wrangler dev
+```
+
+> The compatibility date in `wrangler.jsonc` is set with the `nodejs_compat`
+> flag, which the Supabase client requires on Workers.
+
 ## How realtime stays authenticated
 
 With RLS enabled, an **unauthenticated** realtime socket silently receives no
@@ -142,4 +184,6 @@ lib/
     middleware.ts       Session refresh + /admin guard
 middleware.ts           Wires up the session/guard middleware
 supabase/migrations/    SQL schema
+wrangler.jsonc          Cloudflare Workers config (OpenNext)
+open-next.config.ts     OpenNext Cloudflare adapter config
 ```
