@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+@theme {
+  /* Palette — one accent only */
+  --color-charcoal: #0e0f12;
+  --color-charcoal-soft: #16181d;
+  --color-charcoal-line: #24262d;
+  --color-cream: #f3efe6;
+  --color-cream-dim: #a9a499;
+  --color-gold: #c9a45c;
+  --color-gold-soft: #b8924a;
+  --color-danger: #d98a8a;
+
+  /* Type */
+  --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: var(--color-charcoal);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Subtle vignette so the page feels like an invitation, not a SaaS form */
+.vignette {
+  background:
+    radial-gradient(
+      120% 90% at 50% -10%,
+      rgba(201, 164, 92, 0.08) 0%,
+      rgba(14, 15, 18, 0) 55%
+    ),
+    var(--color-charcoal);
+}
+
+/* Thin gold rule */
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-gold) 50%,
+    transparent
+  );
+  opacity: 0.5;
+}
+
+/* Gold highlight when a new registration arrives in the dashboard */
+@keyframes goldFlash {
+  0% {
+    background-color: rgba(201, 164, 92, 0.22);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.flash-new {
+  animation: goldFlash 2s ease-out;
+}
+
+/* Live connection pulse */
+@keyframes livePulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(201, 164, 92, 0.5);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 0 5px rgba(201, 164, 92, 0);
+  }
+}
+
+.live-dot {
+  animation: livePulse 1.8s ease-in-out infinite;
+}
+
+/* Inputs share one look */
+.field {
+  width: 100%;
+  background-color: var(--color-charcoal-soft);
+  border: 1px solid var(--color-charcoal-line);
+  border-radius: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  color: var(--color-cream);
+  font-size: 1rem;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.field::placeholder {
+  color: var(--color-cream-dim);
+}
+
+.field:focus {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 1px rgba(201, 164, 92, 0.35);
+}
+
+/* Hide number input spinners not needed; keep base reset minimal */
+input[type="file"] {
+  display: none;
+}
