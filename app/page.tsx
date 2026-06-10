@@ -1,4 +1,5 @@
 import RegistrationForm from "@/components/RegistrationForm";
+import EyLogo from "@/components/EyLogo";
 import { strings } from "@/lib/strings";
 
 export default function Home() {
@@ -7,6 +8,7 @@ export default function Home() {
       <div className="w-full max-w-md">
         <div className="rounded-2xl border border-charcoal-line bg-charcoal-soft/70 backdrop-blur-sm px-6 py-8 sm:px-8 sm:py-10 shadow-2xl shadow-black/40">
           <header className="text-center mb-8">
+            <EyLogo className="w-16 mx-auto mb-6" />
             <p className="uppercase tracking-[0.3em] text-xs text-gold mb-3">
               {strings.form.subheading}
             </p>

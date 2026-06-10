@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import EyLogo from "@/components/EyLogo";
 import { strings } from "@/lib/strings";
 import {
   timeAgo,
@@ -310,13 +311,16 @@ export default function Dashboard({ initialRows, userEmail, loadError }: Props) 
     <main className="min-h-dvh px-4 py-6 sm:px-8 sm:py-8 max-w-6xl mx-auto pb-24">
       {/* Header */}
       <header className="flex flex-wrap items-center justify-between gap-4 mb-5">
-        <div>
-          <h1 className="font-serif text-3xl sm:text-4xl text-cream leading-none">
-            {strings.admin.title}
-          </h1>
-          <p className="text-xs uppercase tracking-[0.25em] text-gold mt-1">
-            {strings.admin.subtitle}
-          </p>
+        <div className="flex items-center gap-3">
+          <EyLogo className="w-10 shrink-0" />
+          <div>
+            <h1 className="font-serif text-3xl sm:text-4xl text-cream leading-none">
+              {strings.admin.title}
+            </h1>
+            <p className="text-xs uppercase tracking-[0.25em] text-gold mt-1">
+              {strings.admin.subtitle}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-5">
@@ -977,7 +981,9 @@ function QuickCheckIn({
   return (
     <main className="min-h-dvh max-w-2xl mx-auto px-4 py-6 flex flex-col">
       <header className="flex items-center justify-between gap-4 mb-4">
-        <div>
+        <div className="flex items-center gap-3">
+          <EyLogo className="w-9 shrink-0" />
+          <div>
           <h1 className="font-serif text-2xl text-cream leading-none">
             {strings.admin.quickModeTitle}
           </h1>
@@ -993,6 +999,7 @@ function QuickCheckIn({
                 .replace("{n}", String(arrived))
                 .replace("{total}", String(total))}
             </span>
+          </div>
           </div>
         </div>
         <button

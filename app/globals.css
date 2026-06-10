@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  /* Palette — one accent only */
-  --color-charcoal: #0e0f12;
-  --color-charcoal-soft: #16181d;
-  --color-charcoal-line: #24262d;
-  --color-cream: #f3efe6;
-  --color-cream-dim: #a9a499;
-  --color-gold: #c9a45c;
-  --color-gold-soft: #b8924a;
-  --color-danger: #d98a8a;
+  /* Palette — EY brand: charcoal + EY yellow */
+  --color-charcoal: #1a1a24;
+  --color-charcoal-soft: #2e2e38;
+  --color-charcoal-line: #3a3a46;
+  --color-cream: #f6f6f7;
+  --color-cream-dim: #a3a3ad;
+  --color-gold: #ffe600;
+  --color-gold-soft: #e6cf00;
+  --color-danger: #e88a8a;
 
   /* Type */
   --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
@@ -34,7 +34,7 @@ body {
   background:
     radial-gradient(
       120% 90% at 50% -10%,
-      rgba(201, 164, 92, 0.08) 0%,
+      rgba(255, 230, 0, 0.08) 0%,
       rgba(14, 15, 18, 0) 55%
     ),
     var(--color-charcoal);
@@ -55,7 +55,7 @@ body {
 /* Gold highlight when a new registration arrives in the dashboard */
 @keyframes goldFlash {
   0% {
-    background-color: rgba(201, 164, 92, 0.22);
+    background-color: rgba(255, 230, 0, 0.22);
   }
   100% {
     background-color: transparent;
@@ -71,11 +71,11 @@ body {
   0%,
   100% {
     opacity: 1;
-    box-shadow: 0 0 0 0 rgba(201, 164, 92, 0.5);
+    box-shadow: 0 0 0 0 rgba(255, 230, 0, 0.5);
   }
   50% {
     opacity: 0.6;
-    box-shadow: 0 0 0 5px rgba(201, 164, 92, 0);
+    box-shadow: 0 0 0 5px rgba(255, 230, 0, 0);
   }
 }
 
@@ -104,7 +104,7 @@ body {
 
 .field:focus {
   border-color: var(--color-gold);
-  box-shadow: 0 0 0 1px rgba(201, 164, 92, 0.35);
+  box-shadow: 0 0 0 1px rgba(255, 230, 0, 0.35);
 }
 
 /* Hide number input spinners not needed; keep base reset minimal */
