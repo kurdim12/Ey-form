@@ -41,15 +41,25 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST "$URL/rest/v1/registrations" \
 
 ## Environment variables
 
-Copy `.env.example` to `.env.local` and fill in your project's values:
+**No setup required to run or deploy.** The project's Supabase URL and public
+anon key are committed as built-in defaults in
+[`lib/supabase/config.ts`](lib/supabase/config.ts), so the app builds and
+deploys with zero environment configuration. These are public, client-safe
+values (the anon key ships in the browser bundle either way; RLS is what
+protects the data).
+
+To point the app at a **different** Supabase project, set either env var — they
+always take precedence over the built-in defaults:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://<your-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
 ```
 
-Both are public, client-safe values. Find them in the Supabase dashboard under
-**Project Settings → API**.
+Locally, put them in `.env.local` (see `.env.example`). On Vercel / Cloudflare,
+add them as **build** variables. Find the values in the Supabase dashboard under
+**Project Settings → API**. The secret **service role** key is never used by
+the app and must never be added here.
 
 ## Database / migration
 
@@ -118,13 +128,11 @@ adapter (`@opennextjs/cloudflare`). Config lives in `wrangler.jsonc` and
    select this repo. It detects Next.js and the OpenNext adapter.
 3. Confirm the build/deploy command is `npx opennextjs-cloudflare build` /
    `npx wrangler deploy` (or `npm run deploy`).
-4. Under **Settings → Variables and Secrets → Build variables**, add:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-
-   These must be set as **build** variables (not just runtime) because
-   `NEXT_PUBLIC_*` values are inlined into the client bundle at build time.
-5. Deploy. You get a `*.workers.dev` URL; add a custom domain if you like.
+4. Deploy. No environment variables are required — the Supabase config is
+   committed as a built-in default. (Only set `NEXT_PUBLIC_*` **build**
+   variables here if you want to point at a *different* Supabase project;
+   `NEXT_PUBLIC_*` values are inlined at build time.)
+5. You get a `*.workers.dev` URL; add a custom domain if you like.
 
 **Option B — Deploy from your machine**
 
@@ -134,8 +142,8 @@ npx wrangler login          # one-time auth
 npm run deploy              # builds with OpenNext and deploys
 ```
 
-`npm run deploy` reads `.env.local` for the `NEXT_PUBLIC_*` values during the
-build, so make sure that file is filled in locally.
+`npm run deploy` works as-is — the Supabase config has a committed default.
+(Set `NEXT_PUBLIC_*` in `.env.local` only to target a different project.)
 
 **Preview the Workers runtime locally**
 
