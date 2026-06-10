@@ -30,6 +30,30 @@ export function isToday(iso: string, now: Date = new Date()): boolean {
   );
 }
 
+/** Full local date + time, e.g. "10 Jun 2026, 21:04". */
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
+ * Extracts the object path within the `photos` bucket from a public photo URL,
+ * so it can be deleted from storage. Returns null if the URL isn't a photos URL.
+ */
+export function photoPathFromUrl(url: string | null): string | null {
+  if (!url) return null;
+  const marker = "/storage/v1/object/public/photos/";
+  const i = url.indexOf(marker);
+  if (i === -1) return null;
+  const path = url.slice(i + marker.length).split("?")[0];
+  return path ? decodeURIComponent(path) : null;
+}
+
 function csvCell(value: string): string {
   // Always quote and escape embedded quotes — keeps commas/newlines/Arabic safe.
   return `"${value.replace(/"/g, '""')}"`;

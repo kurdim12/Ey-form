@@ -59,6 +59,33 @@ export const strings = {
     colContact: "Contact",
     colRegistered: "Registered",
     colStatus: "Status",
+
+    // Check-in stats
+    arrived: "Arrived",
+    remaining: "Remaining",
+    arrivedSummary: "{n} of {total} arrived",
+
+    // Filters
+    filterAll: "All",
+    filterNew: "New",
+    filterCheckedIn: "Checked in",
+
+    // Sort
+    sortLabel: "Sort",
+    sortNewest: "Newest",
+    sortOldest: "Oldest",
+    sortName: "Name (A–Z)",
+
+    // Guest detail / management
+    checkIn: "Check in",
+    undoCheckIn: "Undo check-in",
+    deleteGuest: "Delete guest",
+    deleteConfirmTitle: "Delete this guest?",
+    deleteConfirmBody: "This permanently removes the registration and photo. This can't be undone.",
+    deleteConfirmYes: "Delete",
+    cancel: "Cancel",
+    close: "Close",
+    registeredAt: "Registered",
   },
 
   login: {
