@@ -23,6 +23,10 @@ export default function RegistrationForm() {
   const [error, setError] = useState<string | null>(null);
   const [doneName, setDoneName] = useState<string | null>(null);
 
+  // Guards against a double-fire of the submit handler (fast double-tap on
+  // mobile, where setSubmitting hasn't disabled the button yet).
+  const submitLock = useRef(false);
+
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     setError(null);
     const file = e.target.files?.[0];
@@ -62,6 +66,10 @@ export default function RegistrationForm() {
       return;
     }
 
+    // Ignore re-entrant calls (double-tap / resend) so the same photo isn't
+    // uploaded to the same path twice (which would 400 as a duplicate).
+    if (submitLock.current) return;
+    submitLock.current = true;
     setSubmitting(true);
     try {
       // 1. Process + upload the photo. The insert must NOT run if this fails.
@@ -72,12 +80,15 @@ export default function RegistrationForm() {
         .from("photos")
         .upload(path, processed.blob, {
           contentType: processed.contentType,
-          upsert: false,
+          // Overwrite rather than fail if the same key is sent twice (e.g. a
+          // mobile-network resend), which otherwise returns a 400 "Duplicate".
+          upsert: true,
         });
 
       if (uploadError) {
         setError(strings.form.errorUpload);
         setSubmitting(false);
+        submitLock.current = false;
         return;
       }
 
@@ -101,6 +112,7 @@ export default function RegistrationForm() {
       if (insertError) {
         setError(strings.form.errorSubmit);
         setSubmitting(false);
+        submitLock.current = false;
         return;
       }
 
@@ -110,6 +122,7 @@ export default function RegistrationForm() {
       // Network or unexpected error — keep every entered value for retry.
       setError(strings.form.errorSubmit);
       setSubmitting(false);
+      submitLock.current = false;
     }
   }
 
