@@ -8,6 +8,14 @@ import type { RegistrationInsert } from "@/lib/types";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** A Supabase storage "Duplicate" error means the object already landed. */
+function isDuplicate(err: unknown): boolean {
+  const msg = (err as { message?: string })?.message?.toLowerCase() ?? "";
+  return msg.includes("already exists") || msg.includes("duplicate");
+}
+
 export default function RegistrationForm() {
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -22,6 +30,10 @@ export default function RegistrationForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [doneName, setDoneName] = useState<string | null>(null);
+
+  // Guards against a double-fire of the submit handler (fast double-tap on
+  // mobile, where setSubmitting hasn't disabled the button yet).
+  const submitLock = useRef(false);
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     setError(null);
@@ -62,30 +74,62 @@ export default function RegistrationForm() {
       return;
     }
 
+    // Ignore re-entrant calls (double-tap / resend) so the same photo isn't
+    // uploaded to the same path twice (which would 400 as a duplicate).
+    if (submitLock.current) return;
+    submitLock.current = true;
     setSubmitting(true);
     try {
-      // 1. Process + upload the photo. The insert must NOT run if this fails.
+      // 1. Process + upload the photo, retrying on transient failures so a
+      //    flaky venue connection self-heals. The insert must NOT run unless
+      //    the photo actually landed. A fresh key per attempt means a retry can
+      //    never collide with a previous (possibly half-completed) attempt.
       const processed = await processPhoto(photoFile);
-      const path = `${Date.now()}-${crypto.randomUUID()}.${processed.ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("photos")
-        .upload(path, processed.blob, {
-          contentType: processed.contentType,
-          upsert: false,
-        });
+      let uploadedPath: string | null = null;
+      let lastUploadError: unknown = null;
+      const UPLOAD_ATTEMPTS = 4;
 
-      if (uploadError) {
-        setError(strings.form.errorUpload);
+      for (let attempt = 0; attempt < UPLOAD_ATTEMPTS; attempt++) {
+        const path = `${Date.now()}-${crypto.randomUUID()}.${processed.ext}`;
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from("photos")
+            .upload(path, processed.blob, {
+              contentType: processed.contentType,
+              upsert: true,
+            });
+
+          if (!uploadError || isDuplicate(uploadError)) {
+            uploadedPath = path;
+            break;
+          }
+          lastUploadError = uploadError;
+        } catch (e) {
+          lastUploadError = e;
+        }
+        // Back off before the next try: 0.4s, 0.8s, 1.6s.
+        if (attempt < UPLOAD_ATTEMPTS - 1) await sleep(400 * 2 ** attempt);
+      }
+
+      if (!uploadedPath) {
+        // Temporary diagnostic: surface the real reason so we stop guessing.
+        const detail =
+          (lastUploadError as { message?: string; error?: string; status?: number })
+            ?.message ||
+          (lastUploadError as { error?: string })?.error ||
+          String(lastUploadError ?? "unknown");
+        setError(`${strings.form.errorUpload} [${detail}]`);
         setSubmitting(false);
+        submitLock.current = false;
         return;
       }
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from("photos").getPublicUrl(path);
+      } = supabase.storage.from("photos").getPublicUrl(uploadedPath);
 
-      // 2. Insert the registration row.
+      // 2. Insert the registration row, also with a couple of retries.
       const row: RegistrationInsert = {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
@@ -94,13 +138,27 @@ export default function RegistrationForm() {
         photo_url: publicUrl,
       };
 
-      const { error: insertError } = await supabase
-        .from("registrations")
-        .insert(row);
+      let inserted = false;
+      const INSERT_ATTEMPTS = 3;
+      for (let attempt = 0; attempt < INSERT_ATTEMPTS; attempt++) {
+        try {
+          const { error: insertError } = await supabase
+            .from("registrations")
+            .insert(row);
+          if (!insertError) {
+            inserted = true;
+            break;
+          }
+        } catch {
+          // fall through to retry
+        }
+        if (attempt < INSERT_ATTEMPTS - 1) await sleep(400 * 2 ** attempt);
+      }
 
-      if (insertError) {
+      if (!inserted) {
         setError(strings.form.errorSubmit);
         setSubmitting(false);
+        submitLock.current = false;
         return;
       }
 
@@ -110,6 +168,7 @@ export default function RegistrationForm() {
       // Network or unexpected error — keep every entered value for retry.
       setError(strings.form.errorSubmit);
       setSubmitting(false);
+      submitLock.current = false;
     }
   }
 

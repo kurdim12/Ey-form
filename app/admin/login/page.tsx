@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import EyLogo from "@/components/EyLogo";
 import { strings } from "@/lib/strings";
 
 export default function LoginPage() {
@@ -45,6 +46,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="rounded-2xl border border-charcoal-line bg-charcoal-soft/70 px-6 py-8 sm:px-8 sm:py-10 shadow-2xl shadow-black/40">
           <header className="text-center mb-8">
+            <EyLogo className="w-14 mx-auto mb-5" />
             <h1 className="font-serif text-3xl text-cream">
               {strings.login.heading}
             </h1>
