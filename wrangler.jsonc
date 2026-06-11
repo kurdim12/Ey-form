@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
-  "name": "gala-dinner",
+  "name": "ey",
   "compatibility_date": "2026-06-10",
   "compatibility_flags": ["nodejs_compat"],
   "build": {
