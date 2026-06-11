@@ -113,8 +113,13 @@ export default function RegistrationForm() {
       }
 
       if (!uploadedPath) {
-        void lastUploadError;
-        setError(strings.form.errorUpload);
+        // Temporary diagnostic: surface the real reason so we stop guessing.
+        const detail =
+          (lastUploadError as { message?: string; error?: string; status?: number })
+            ?.message ||
+          (lastUploadError as { error?: string })?.error ||
+          String(lastUploadError ?? "unknown");
+        setError(`${strings.form.errorUpload} [${detail}]`);
         setSubmitting(false);
         submitLock.current = false;
         return;
